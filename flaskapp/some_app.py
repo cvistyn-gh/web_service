@@ -15,8 +15,8 @@ SECRET_KEY = 'secret'
 app.config['SECRET_KEY'] = SECRET_KEY
 
 app.config['RECAPTCHA_USE_SSL'] = False
-app.config['RECAPTCHA_PUBLIC_KEY'] = 'сюда поместить ключ из google'
-app.config['RECAPTCHA_PRIVATE_KEY'] = 'сюда поместить секретный ключ из google'
+app.config['RECAPTCHA_PUBLIC_KEY'] = '6LfTRAUsAAAAACEqkSULpcWHqFDY09N6HFEnEze_'
+app.config['RECAPTCHA_PRIVATE_KEY'] = '6LfTRAUsAAAAAC7XmU2kxKUeULrDDw-t2A_30-cO'
 app.config['RECAPTCHA_OPTIONS'] = {'theme': 'white'}
 
 from flask_bootstrap import Bootstrap
