@@ -1,0 +1,34 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+        
+    - name: Install dependencies
+      run: |
+        pip install flask
+        pip install gunicorn
+        pip install requests
+        pip install flask-bootstrap
+        pip install flask-wtf
+        pip install pillow
+        pip install tensorflow==2.10.0
+        pip install keras==2.10.0
+        pip install lxml
+        
+    - name: Run tests
+      run: |
+        cd flaskapp
+        chmod +x st.sh
+        ./st.sh
