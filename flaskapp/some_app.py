@@ -51,8 +51,8 @@ def net():
 
         filename = os.path.join('./static', secure_filename(form.upload.data.filename))
         import net as neuronet
-        fcount, fimage = neuronet.read_image_files(10,'./static')
-        decode = neuronet.getresult(fimage)
+        # fcount, fimage = neuronet.read_image_files(10,'./static')
+        # decode = neuronet.getresult(fimage)
         for elem in decode:
             neurodic[elem[0][1]] = elem[0][2]
 
@@ -63,7 +63,8 @@ def net():
 from flask import request
 from flask import Response
 import base64
-from PIL import Image
+# from PIL import Image
+import PIL.Image as Image
 from io import BytesIO
 import json
 
