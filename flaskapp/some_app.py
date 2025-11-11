@@ -75,24 +75,48 @@ from PIL import Image
 from io import BytesIO
 import json
 
-@app.route("/apinet",methods=['GET', 'POST'])
+@app.route("/apinet", methods=['GET', 'POST'])
 def apinet():
     neurodic = {}
-    if request.mimetype == 'application/json':
+
+    try:
+
+        if request.mimetype != 'application/json':
+            return json.dumps({"error": "Only JSON requests accepted"}), 400
+
         data = request.get_json()
+        if not data or 'imagebin' not in data:
+            return json.dumps({"error": "No image data provided"}), 400
+
+        print("DEBUG: Received API request")
+
         filebytes = data['imagebin'].encode('utf-8')
         cfile = base64.b64decode(filebytes)
         img = Image.open(BytesIO(cfile))
+
+        print("DEBUG: Image decoded successfully")
+
+        import net as neuronet
         decode = neuronet.getresult([img])
+
+        print(f"DEBUG: Neural network result: {decode}")
+
         neurodic = {}
         for elem in decode:
             neurodic[elem[0][1]] = str(elem[0][2])
-            print(elem)
+
+        print(f"DEBUG: Returning result: {neurodic}")
+
         ret = json.dumps(neurodic)
-        resp = Response(response=ret,
-                        status=200,
-                        mimetype="application/json")
+        resp = Response(response=ret, status=200, mimetype="application/json")
         return resp
+
+    except Exception as e:
+        print(f"ERROR in apinet: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+
+        return json.dumps({"error": f"Internal server error: {str(e)}"}), 500
 
 import lxml.etree as ET
 
