@@ -82,7 +82,7 @@ except Exception as e:
 
 try:
     img_data = None
-    path = os.path.join('./static','image0008.png')
+    path = os.path.join('./flaskapp/static','image0008.png')
 
     if os.path.exists(path):
         with open(path, 'rb') as fh:
