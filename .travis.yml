@@ -1,11 +1,12 @@
 language: python
 python:
-  - "3.7.6"
-  
+  - "3.7"
+
 before_install:
-    - chmode +x ./flaskapp/st.sh
+    - chmod +x ./flaskapp/st.sh
 install:
-    - pip install -r requirements.txt
+    - pip install pipenv
+    - pipenv install --deploy
 script:
     - cd flaskapp
     - ./st.sh

@@ -87,3 +87,14 @@ def getresult(image_box):
     except Exception as e:
         print(f"Ошибка классификации: {e}")
         return [[('prediction_error', 'prediction_error', 0.0)]]
+
+if __name__ == "__main__":
+    # Тестовая загрузка изображений
+    fcount, fimage = read_image_files(1, './static')
+    if fcount > 0:
+        decode = getresult(fimage)
+        print("Тест классификации:")
+        for elem in decode:
+            print(f"Класс: {elem[0][1]}, Вероятность: {elem[0][2]}")
+    else:
+        print("Нет изображений для теста")
