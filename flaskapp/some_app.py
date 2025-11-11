@@ -49,7 +49,8 @@ def net():
 
     if form.validate_on_submit():
 
-        filename = os.path.join('./static', secure_filename(form.upload.data.filename))
+        # filename = os.path.join('./static', secure_filename(form.upload.data.filename))
+        filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', secure_filename(form.upload.data.filename))
         form.upload.data.save(filename)
         # neurodic = {"status": "Neural network temporarily disabled"}
         import net as neuronet
@@ -122,8 +123,10 @@ import lxml.etree as ET
 
 @app.route("/apixml",methods=['GET', 'POST'])
 def apixml():
-    dom = ET.parse("./static/xml/file.xml")
-    xslt = ET.parse("./static/xml/file.xslt")
+    xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'xml', 'file.xml')
+    xslt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'xml', 'file.xslt')
+    dom = ET.parse(xml_path)
+    xslt = ET.parse(xslt_path)
     transform = ET.XSLT(xslt)
     newhtml = transform(dom)
     strfile = ET.tostring(newhtml)
