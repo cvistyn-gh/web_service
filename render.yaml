@@ -11,6 +11,11 @@ services:
     # Запуск
     startCommand: cd flaskapp && gunicorn wsgi:app -b 0.0.0.0:$PORT
     envVars:
+      # Render автоматически сгенерирует безопасный SECRET_KEY
       - key: SECRET_KEY
-        # Автогенерация секретного ключа
         generateValue: true
+      # Добавляем reCAPTCHA ключи как environment variables
+      - key: RECAPTCHA_PUBLIC_KEY
+        value: '6LfXBgksAAAAAIHzKu-_MNePxVi9Z67Z_ZZOiV9F'
+      - key: RECAPTCHA_PRIVATE_KEY  
+        value: '6LfXBgksAAAAAEK2_3jlgo5_o304LE6yhbpSCxxs'

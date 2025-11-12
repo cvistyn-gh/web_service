@@ -1,0 +1,17 @@
+# Файлы окружения
+.env
+.env.local
+.env.production
+
+# Файлы Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Логи
+*.log
+
+# IDE
+.vscode/
+.idea/

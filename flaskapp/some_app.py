@@ -17,14 +17,26 @@ import os
 app = Flask(__name__)
 
 # Конфигурация приложеня
-SECRET_KEY = 'secret'
+# SECRET_KEY = 'secret'
+# Безопасное получение SECRET_KEY из переменных окружения
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SECRET_KEY'] = SECRET_KEY
 
 # Настройки reCAPTCHA для защиты форм
 app.config['RECAPTCHA_USE_SSL'] = False
-app.config['RECAPTCHA_PUBLIC_KEY'] = '6LfXBgksAAAAAIHzKu-_MNePxVi9Z67Z_ZZOiV9F'
-app.config['RECAPTCHA_PRIVATE_KEY'] = '6LfXBgksAAAAAEK2_3jlgo5_o304LE6yhbpSCxxs'
+# app.config['RECAPTCHA_PUBLIC_KEY'] = '6LfXBgksAAAAAIHzKu-_MNePxVi9Z67Z_ZZOiV9F'
+# app.config['RECAPTCHA_PRIVATE_KEY'] = '6LfXBgksAAAAAEK2_3jlgo5_o304LE6yhbpSCxxs'
+# Получаем ключи reCAPTCHA из переменных окружения
+app.config['RECAPTCHA_PUBLIC_KEY'] = os.environ.get('RECAPTCHA_PUBLIC_KEY', '6LfXBgksAAAAAIHzKu-_MNePxVi9Z67Z_ZZOiV9F')
+app.config['RECAPTCHA_PRIVATE_KEY'] = os.environ.get('RECAPTCHA_PRIVATE_KEY', '6LfXBgksAAAAAEK2_3jlgo5_o304LE6yhbpSCxxs')
 app.config['RECAPTCHA_OPTIONS'] = {'theme': 'white'}
+
+# Проверка конфигурации для отладки
+if app.config['SECRET_KEY'] == 'dev-secret-key-change-in-production':
+    print("⚠ WARNING: Using default SECRET_KEY. For production, set SECRET_KEY environment variable.")
+
+if app.config['RECAPTCHA_PUBLIC_KEY'] == '6LfXBgksAAAAAIHzKu-_MNePxVi9Z67Z_ZZOiV9F':
+    print("⚠ WARNING: Using default reCAPTCHA keys. For production, set RECAPTCHA_PUBLIC_KEY and RECAPTCHA_PRIVATE_KEY environment variables.")
 
 # Интеграция Bootstrap для стилизации
 from flask_bootstrap import Bootstrap
