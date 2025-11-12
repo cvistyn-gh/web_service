@@ -1,34 +1,60 @@
+# GitHub Actions workflow для Continuous Integration
+# Автоматически запускает тесты при push и pull request
+
+# Название workflow
 name: CI
 
+# Триггеры запуска: при push в любую ветку и при создании pull request
 on: [push, pull_request]
 
+# Определение jobs (заданий)
 jobs:
   test:
+    # Запуск на последней версии Ubuntu
     runs-on: ubuntu-latest
     
+    # Шаги выполнения
     steps:
+    # Шаг 1: Получение кода из репозитория
     - name: Checkout code
       uses: actions/checkout@v3
       
+    # Шаг 2: Установка Python
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
+        # Используем Python 3.8 для совместимости с TensorFlow
         python-version: '3.8'
         
+    # Шаг 3: Установка зависимостей
     - name: Install dependencies
       run: |
+        # Основные зависимости Flask приложения
         pip install flask
         pip install gunicorn
         pip install requests
         pip install flask-bootstrap
         pip install flask-wtf
         pip install pillow
+        
+        # Зависимости для нейросетей (специфичные версии для совместимости)
         pip install tensorflow==2.10.0
         pip install keras==2.10.0
+        
+        # Зависимости для XML обработки
         pip install lxml
         
+        # НОВЫЕ ЗАВИСИМОСТИ ДЛЯ ФУНКЦИОНАЛЬНОСТИ УСТРАНЕНИЯ ШУМА
+        pip install opencv-python-headless
+        pip install numpy
+        pip install matplotlib
+        pip install scikit-image
+        
+    # Шаг 4: Запуск тестов
     - name: Run tests
       run: |
         cd flaskapp
+        # Даем права на выполнение скрипта
         chmod +x st.sh
+        # Запускаем тестовый скрипт
         ./st.sh
