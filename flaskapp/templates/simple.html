@@ -1,13 +1,26 @@
+<!-- Простой демонстрационный шаблон для передачи данных из Flask -->
+<!-- Показывает основы работы с Jinja2 шаблонизатором -->
+
 <html>
 <head>
-{% if some_str %}
-<title>{{ some_str }} </title>
-{% else %}
-<title>Hm, there is no string!</title>
-{% endif %}
+    <!-- Условный блок для динамического заголовка страницы -->
+    <!-- Проверяем передана ли переменная some_str из Flask -->
+    {% if some_str %}
+        <!-- Если some_str существует, используем ее как заголовок -->
+        <title>{{ some_str }} </title>
+    {% else %}
+        <!-- Fallback заголовок если переменная не передана -->
+        <title>Hm, there is no string!</title>
+    {% endif %}
 </head>
 <body>
-<h1 style="color:{{ some_pars.color }};">Hello, {{ some_pars.user }}!</h1>
-<h2>some_value {{ some_value }}!</h2>
+    <!-- Динамическое приветствие с изменяемым цветом -->
+    <!-- style="color:{{ some_pars.color }};" - цвет из словаря some_pars -->
+    <!-- {{ some_pars.user }} - имя пользователя из словаря some_pars -->
+    <h1 style="color:{{ some_pars.color }};">Hello, {{ some_pars.user }}!</h1>
+    
+    <!-- Отображение числового значения -->
+    <!-- {{ some_value }} - переменная с числовым значением из Flask -->
+    <h2>some_value {{ some_value }}!</h2>
 </body>
 </html>

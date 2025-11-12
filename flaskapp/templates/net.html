@@ -1,21 +1,45 @@
+<!-- Шаблон страницы классификации изображений нейросетью -->
+<!-- Наследуем базовый шаблон Bootstrap для стилизации -->
 {% extends "bootstrap/base.html" %}
+<!-- Импортируем макросы для работы с WTForms -->
 {% import "bootstrap/wtf.html" as wtf %}
+
+<!-- Заголовок страницы в браузере -->
 {% block title %}tensorflow exp{% endblock %}
+
+<!-- Основное содержимое страницы -->
 {% block content %}
-{{ wtf.quick_form(form, method='post',enctype="multipart/form-data", action="net") }}
-<h2>Classes: </h2>
-{% if neurodic %}
-{% for key, value in neurodic.items() %}
-<h3>{{key}}: {{value}}</h3>
-{% endfor %}
-{% else %}
-<h3> There is no classes </h3>
-{% endif %}
-<h2>Image is here: </h2>
-{% if image_name %}
-<p>{{image_name}}
-<p><img src={{image_name}} class="img-rounded" alt="My Image" width = 224 height=224 />
-{% else %}
-<p> There is no image yet </p>
-{% endif %}
+    <!-- Отображение формы для загрузки изображения -->
+    <!-- quick_form автоматически генерирует всю разметку формы -->
+    <!-- method='post' - отправка данных формы -->
+    <!-- enctype="multipart/form-data" - необходимо для загрузки файлов -->
+    <!-- action="net" - отправка формы на тот же URL -->
+    {{ wtf.quick_form(form, method='post', enctype="multipart/form-data", action="net") }}
+
+    <!-- Секция отображения результатов классификации -->
+    <h2>Classes: </h2>
+    {% if neurodic %}
+        <!-- Если есть результаты классификации, отображаем их -->
+        {% for key, value in neurodic.items() %}
+            <!-- key - название класса, value - вероятность -->
+            <h3>{{key}}: {{value}}</h3>
+        {% endfor %}
+    {% else %}
+        <!-- Сообщение если классификация еще не выполнялась -->
+        <h3> There is no classes </h3>
+    {% endif %}
+
+    <!-- Секция отображения загруженного изображения -->
+    <h2>Image is here: </h2>
+    {% if image_name %}
+        <!-- Если изображение было загружено, показываем его -->
+        <p>{{image_name}}</p>
+        <!-- Отображение изображения с Bootstrap классами -->
+        <!-- class="img-rounded" - скругленные углы -->
+        <!-- width=224 height=224 - размеры для нейросети ResNet -->
+        <p><img src={{image_name}} class="img-rounded" alt="My Image" width=224 height=224 />
+    {% else %}
+        <!-- Сообщение если изображение еще не загружено -->
+        <p> There is no image yet </p>
+    {% endif %}
 {% endblock %}

@@ -1,3 +1,4 @@
+# Конфигурация развертывания на Render.com
 services:
   - type: web
     name: web-service-lab1
@@ -5,8 +6,11 @@ services:
     plan: free
     python:
       version: "3.11.8"
+    # Установка зависимостей
     buildCommand: pip install -r requirements.txt
+    # Запуск
     startCommand: cd flaskapp && gunicorn wsgi:app -b 0.0.0.0:$PORT
     envVars:
       - key: SECRET_KEY
+        # Автогенерация секретного ключа
         generateValue: true

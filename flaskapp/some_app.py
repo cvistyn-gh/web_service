@@ -1,38 +1,50 @@
-print("Hello world")
-from flask import Flask, render_template, flash
+# Главное Flask приложение с маршрутами и обработкой изображений
+# Включает: классификацию нейросетью, устранение шума, XML преобразования
 
+# Индикатор запуска приложения
+print("Hello world")
+
+# Импорты Flask и компонентов
+from flask import Flask, render_template, flash
 from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, SubmitField, FloatField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, NumberRange
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-
 from werkzeug.utils import secure_filename
 import os
 
+# Инициализация Flask приложения
 app = Flask(__name__)
 
+# Конфигурация приложеня
 SECRET_KEY = 'secret'
 app.config['SECRET_KEY'] = SECRET_KEY
 
+# Настройки reCAPTCHA для защиты форм
 app.config['RECAPTCHA_USE_SSL'] = False
 app.config['RECAPTCHA_PUBLIC_KEY'] = '6LfXBgksAAAAAIHzKu-_MNePxVi9Z67Z_ZZOiV9F'
 app.config['RECAPTCHA_PRIVATE_KEY'] = '6LfXBgksAAAAAEK2_3jlgo5_o304LE6yhbpSCxxs'
 app.config['RECAPTCHA_OPTIONS'] = {'theme': 'white'}
 
+# Интеграция Bootstrap для стилизации
 from flask_bootstrap import Bootstrap
 bootstrap = Bootstrap(app)
 
 class NetForm(FlaskForm):
+    # Форма для классификации изображений нейросетью
     openid = StringField('openid', validators=[DataRequired()])
     upload = FileField('Load image', validators=[
         FileRequired(),
         FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
+    # Защита от автоматических отправок, ботов
     recaptcha = RecaptchaField()
     submit = SubmitField('send')
 
 class DenoiseForm(FlaskForm):
+    # Форма для устранения шума на изображениях
     upload = FileField('Load image', validators=[FileRequired(),
         FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
+    # Размытие по Гауссу, Медианный фильтр, Двусторонний фильтр, Нелокальное усреднение
     filter_type = SelectField('Filter Type', choices=[
         ('gaussian', 'Gaussian Blur'),('median', 'Median Filter'),
         ('bilateral', 'Bilateral Filter'),('nlm', 'Non-Local Means')
@@ -42,12 +54,15 @@ class DenoiseForm(FlaskForm):
     recaptcha = RecaptchaField()
     submit = SubmitField('Process Image')
 
+# Основные маршруты приложения
 @app.route("/")
 def hello():
+    # Главная страница приложения
     return "<html><head></head><body>Hello World!</body></html>"
 
 @app.route("/data_to")
 def data_to():
+    # Страница с передачей данных в шаблон
     some_pars = {'user':'Ivan','color':'red'}
     some_str = 'Hello my dear friends!'
     some_value = 10
@@ -55,45 +70,50 @@ def data_to():
 
 @app.route("/net", methods=['GET', 'POST'])
 def net():
+    # Страница классификации изображений нейросетью ResNet
     form = NetForm()
     filename = None
+    # Словарь для результатов классификации
     neurodic = {}
 
     if form.validate_on_submit():
-
-        # filename = os.path.join('./static', secure_filename(form.upload.data.filename))
-        filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', secure_filename(form.upload.data.filename))
+        # Обработка отправленной формы
+        # Сохраняем загруженное изображение в папку static
+        filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+            'static', secure_filename(form.upload.data.filename))
         form.upload.data.save(filename)
-        # neurodic = {"status": "Neural network temporarily disabled"}
+        # Импортируем и используем нейросеть для классификации
         import net as neuronet
         img = Image.open(filename)
         if img.mode != 'RGB':
+            # Конвертируем в RGB если нужно
             img = img.convert('RGB')
         decode = neuronet.getresult([img])
-        # fcount, fimage = neuronet.read_image_files(10,'./static')
-        # decode = neuronet.getresult(fimage)
+
+        # Форматируем результаты для отображения
         for elem in decode:
-            # neurodic[elem[0][1]] = elem[0][2]
+            # Название класса -> вероятность
             neurodic[elem[0][1]] = f"{elem[0][2]:.4f}"
 
         print(f"DEBUG: Processed image {filename}, result: {neurodic}")
 
     return render_template('net.html', form=form, image_name=filename, neurodic=neurodic)
 
+# Импорты для API функциональности
 from flask import request
 from flask import Response
 import base64
 from PIL import Image
-# import PIL.Image as Image
 from io import BytesIO
 import json
 
 @app.route("/apinet", methods=['GET', 'POST'])
 def apinet():
+    # REST API endpoint для классификации изображений через JSON
     neurodic = {}
 
     try:
-
+        # Проверяем что запрос в JSON формате
         if request.mimetype != 'application/json':
             return json.dumps({"error": "Only JSON requests accepted"}), 400
 
@@ -103,28 +123,32 @@ def apinet():
 
         print("DEBUG: Received API request")
 
+        # Декодируем изображение из base64
         filebytes = data['imagebin'].encode('utf-8')
         cfile = base64.b64decode(filebytes)
         img = Image.open(BytesIO(cfile))
 
         print("DEBUG: Image decoded successfully")
 
+        # Классифицируем изображение нейросетью
         import net as neuronet
         decode = neuronet.getresult([img])
 
         print(f"DEBUG: Neural network result: {decode}")
-
+        # Форматируем результат для JSON ответа
         neurodic = {}
         for elem in decode:
+            # Класс -> вероятность (строка)
             neurodic[elem[0][1]] = str(elem[0][2])
 
         print(f"DEBUG: Returning result: {neurodic}")
-
+        # Возвращаем JSON ответ
         ret = json.dumps(neurodic)
         resp = Response(response=ret, status=200, mimetype="application/json")
         return resp
 
     except Exception as e:
+        # Обработка ошибок
         print(f"ERROR in apinet: {str(e)}")
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
@@ -135,18 +159,26 @@ import lxml.etree as ET
 
 @app.route("/apixml",methods=['GET', 'POST'])
 def apixml():
-    xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'xml', 'file.xml')
-    xslt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'xml', 'file.xslt')
+    # Endpoint для преобразования XML через XSLT шаблон
+    # Формируем пути к XML и XSLT файлам
+    xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+        'static', 'xml', 'file.xml')
+    xslt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+        'static', 'xml', 'file.xslt')
+    # Парсим XML и XSLT, применяем преобразование
     dom = ET.parse(xml_path)
     xslt = ET.parse(xslt_path)
     transform = ET.XSLT(xslt)
     newhtml = transform(dom)
     strfile = ET.tostring(newhtml)
+    # Возвращаем преобразованный HTML
     return strfile
 
+# Импорты для функциональности устранения шума
 import cv2
 import numpy as np
 import matplotlib
+# Используем бэкенд без GUI для сервера
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -154,16 +186,19 @@ import base64
 
 @app.route("/denoise", methods=['GET', 'POST'])
 def denoise():
+    # Страница для устранения шума на изображениях с визуализацией
     form = DenoiseForm()
     original_image = None
     processed_image = None
+    # График распределения цветов
     color_plot = None
+    # График анализа шума
     noise_plot = None
 
     if form.validate_on_submit():
         try:
 
-            # Читаем загруженное изображение
+            # Читаем загруженное изображение в формате OpenCV
             image_file = form.upload.data
             img_array = np.frombuffer(image_file.read(), np.uint8)
             original_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
@@ -171,7 +206,7 @@ def denoise():
             if original_image is None:
                 flash('Error: Could not read image file', 'danger')
                 return render_template('denoise.html', form=form)
-
+            # Конвертируем из BGR (OpenCV) в RGB (matplotlib)
             original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
 
             # Применяем выбранный фильтр
@@ -179,38 +214,42 @@ def denoise():
             strength = form.strength.data
 
             if filter_type == 'gaussian':
+                # Гауссово размытие - плавное усреднение
                 kernel_size = max(3, int(strength * 2) * 2 + 1)  # Нечетное число
                 kernel_size = min(kernel_size, 31)  # Ограничиваем максимальный размер
                 processed_image = cv2.GaussianBlur(original_image, (kernel_size, kernel_size), strength)
 
             elif filter_type == 'median':
+                # Медианный фильтр
                 kernel_size = max(3, int(strength * 2) * 2 + 1)
                 kernel_size = min(kernel_size, 15)  # Ограничение для median filter
                 processed_image = cv2.medianBlur(original_image, kernel_size)
 
             elif filter_type == 'bilateral':
+                # Двусторонний фильтр - сохраняет границы
                 d = int(strength * 5)
                 d = min(d, 15)  # Ограничиваем параметр
                 processed_image = cv2.bilateralFilter(original_image, d, d*2, d/2)
 
             elif filter_type == 'nlm':
-                # Non-local means denoising
+                # Нелокальное усреднение - продвинутый метод
                 h = strength * 10
                 h = min(h, 30)  # Ограничиваем параметр
                 processed_image = cv2.fastNlMeansDenoisingColored(original_image, None, h, h, 7, 21)
 
-            # Создаем график распределения цветов
+            # Создаем график распределения цветов до/после обработки
             color_plot = create_color_histogram(original_image, processed_image)
 
-            # Создаем график распределения шума
+            # Создаем график анализа шума (разница между изображениями)
             noise_plot = create_noise_analysis(original_image, processed_image)
 
-            # Сохраняем изображения для отображения
+            # Конвертируем изображения в base64 для отображения в HTML
             original_image = save_image_to_base64(original_image)
             processed_image = save_image_to_base64(processed_image)
 
             flash('Image processed successfully!', 'success')
         except Exception as e:
+            # Обработка ошибок обработки изображения
             flash(f'Error processing image: {str(e)}', 'danger')
 
     return render_template('denoise.html',form=form,
@@ -218,7 +257,7 @@ def denoise():
         color_plot=color_plot,noise_plot=noise_plot)
 
 def create_color_histogram(original, processed):
-
+    # Создает сравнительную гистограмму распределения цветов RGB
     plt.figure(figsize=(12, 4))
 
     try:
@@ -252,7 +291,7 @@ def create_color_histogram(original, processed):
         return None
 
 def create_noise_analysis(original, processed):
-
+    # Анализирует и визуализирует шум как разницу между изображениями
     plt.figure(figsize=(12, 4))
 
     try:
@@ -287,7 +326,7 @@ def create_noise_analysis(original, processed):
         return None
 
 def save_image_to_base64(image):
-
+    # Конвертирует numpy array изображение в base64 строку для HTML
     try:
         from PIL import Image as PILImage
         from io import BytesIO
@@ -302,7 +341,7 @@ def save_image_to_base64(image):
         return None
 
 def save_plot_to_base64():
-
+    # Сохраняет matplotlib figure в base64 строку для отображения в HTML
     try:
         buffer = BytesIO()
         plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight')
@@ -311,7 +350,7 @@ def save_plot_to_base64():
         buffer.close()
 
         graphic = base64.b64encode(image_png).decode()
-        plt.close()  # Важно закрыть figure
+        plt.close()  # Важно закрыть figure, чтобы освободить память
         return f"data:image/png;base64,{graphic}"
     except Exception as e:
         print(f"Error saving plot to base64: {e}")
@@ -319,4 +358,5 @@ def save_plot_to_base64():
         return None
 
 if __name__ == "__main__":
+    # Локальный запуск для разработки
     app.run(host='127.0.0.1', port=5000)

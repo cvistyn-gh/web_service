@@ -1,10 +1,8 @@
+# Этот файл используется продакшн-сервером (Gunicorn) для запуска Flask приложения
+
+# Импорт Flask приложения из основного модуля
 from some_app import app
-
+# Точка входа при прямом запуске файла (для разработки и тестирования
 if __name__ == "__main__":
+    # Запуск встроенного Flask development сервера
     app.run()
-# import sys
-# path = '/home/cvistyn/web_service'
-# if path not in sys.path:
-    # sys.path.append(path)
-
-# from flaskapp.some_app import app as application

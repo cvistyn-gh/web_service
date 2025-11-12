@@ -1,18 +1,26 @@
+<!-- Шаблон страницы устранения шума на изображениях -->
+<!-- Наследуем базовый шаблон Bootstrap для единообразного дизайна -->
 {% extends "bootstrap/base.html" %}
+<!-- Импортируем макросы для работы с WTForms -->
 {% import "bootstrap/wtf.html" as wtf %}
 
+<!-- Заголовок страницы в браузере -->
 {% block title %}Image Denoising{% endblock %}
 
+<!-- Основное содержимое страницы -->
 {% block content %}
 <div class="container mt-4">
     <h1>Image Denoising and Analysis</h1>
     
-    <!-- Flash сообщения -->
+    <!-- Блок для отображения flash сообщений (успех/ошибки) -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
+                <!-- Динамические alert сообщения Bootstrap -->
+                <!-- Категория определяет цвет (success, danger, warning, etc.) -->
                 <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
                     {{ message }}
+                    <!-- Кнопка закрытия сообщения -->
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -21,14 +29,20 @@
         {% endif %}
     {% endwith %}
     
+    <!-- Основной контейнер с формой и информацией -->
     <div class="row">
+        <!-- Левая колонка - форма загрузки и обработки -->
         <div class="col-md-6">
+            <!-- Форма с поддержкой загрузки файлов -->
             <form method="POST" enctype="multipart/form-data">
+                <!-- Скрытые поля формы (CSRF токен) -->
                 {{ form.hidden_tag() }}
                 
+                <!-- Поле загрузки изображения -->
                 <div class="form-group">
                     {{ form.upload.label }}
                     {{ form.upload(class="form-control") }}
+                    <!-- Отображение ошибок валидации -->
                     {% if form.upload.errors %}
                         <div class="text-danger">
                             {% for error in form.upload.errors %}
@@ -38,17 +52,21 @@
                     {% endif %}
                 </div>
                 
+                <!-- Выбор типа фильтра -->
                 <div class="form-group">
                     {{ form.filter_type.label }}
                     {{ form.filter_type(class="form-control") }}
                 </div>
                 
+                <!-- Настройка силы фильтра -->
                 <div class="form-group">
                     {{ form.strength.label }}
                     {{ form.strength(class="form-control") }}
+                    <!-- Подсказка для пользователя -->
                     <small class="form-text text-muted">
                         Filter strength (0.1 - 10.0). Higher values = more smoothing.
                     </small>
+                    <!-- Отображение ошибок валидации -->
                     {% if form.strength.errors %}
                         <div class="text-danger">
                             {% for error in form.strength.errors %}
@@ -58,10 +76,11 @@
                     {% endif %}
                 </div>
                 
-                <!-- reCAPTCHA поле -->
+                <!-- Поле reCAPTCHA для защиты от ботов -->
                 <div class="form-group">
                     {{ form.recaptcha.label }}
                     {{ form.recaptcha(class="form-control") }}
+                    <!-- Отображение ошибок reCAPTCHA -->
                     {% if form.recaptcha.errors %}
                         <div class="text-danger">
                             {% for error in form.recaptcha.errors %}
@@ -71,27 +90,34 @@
                     {% endif %}
                 </div>
                 
+                <!-- Кнопка отправки формы -->
                 {{ form.submit(class="btn btn-primary") }}
             </form>
         </div>
+        
+        <!-- Правая колонка - информация о фильтрах -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Filter Information</h5>
+                    <!-- Описание доступных фильтров -->
                     <p><strong>Gaussian Blur:</strong> Smooths image using Gaussian function</p>
                     <p><strong>Median Filter:</strong> Removes salt-and-pepper noise</p>
                     <p><strong>Bilateral Filter:</strong> Preserves edges while smoothing</p>
                     <p><strong>Non-Local Means:</strong> Advanced noise reduction</p>
                     <hr>
+                    <!-- Примечание о reCAPTCHA -->
                     <p class="text-muted"><small>Please complete the reCAPTCHA to process your image.</small></p>
                 </div>
             </div>
         </div>
     </div>
     
+    <!-- Секция отображения результатов (показывается после обработки) -->
     {% if original_image %}
     <hr>
     
+    <!-- Сравнение оригинального и обработанного изображения -->
     <div class="row mt-4">
         <div class="col-md-6">
             <div class="card">
@@ -99,6 +125,7 @@
                     <h3>Original Image</h3>
                 </div>
                 <div class="card-body">
+                    <!-- Оригинальное изображение в base64 формате -->
                     <img src="{{ original_image }}" class="img-fluid" alt="Original">
                 </div>
             </div>
@@ -109,12 +136,14 @@
                     <h3>Processed Image</h3>
                 </div>
                 <div class="card-body">
+                    <!-- Обработанное изображение в base64 формате -->
                     <img src="{{ processed_image }}" class="img-fluid" alt="Processed">
                 </div>
             </div>
         </div>
     </div>
     
+    <!-- График распределения цветов (показывается если доступен) -->
     {% if color_plot %}
     <div class="row mt-4">
         <div class="col-12">
@@ -123,6 +152,7 @@
                     <h3>Color Distribution Analysis</h3>
                 </div>
                 <div class="card-body">
+                    <!-- График гистограммы цветов в base64 формате -->
                     <img src="{{ color_plot }}" class="img-fluid" alt="Color Distribution">
                 </div>
             </div>
@@ -130,6 +160,7 @@
     </div>
     {% endif %}
     
+    <!-- График анализа шума (показывается если доступен) -->
     {% if noise_plot %}
     <div class="row mt-4">
         <div class="col-12">
@@ -138,6 +169,7 @@
                     <h3>Noise Analysis</h3>
                 </div>
                 <div class="card-body">
+                    <!-- График распределения шума в base64 формате -->
                     <img src="{{ noise_plot }}" class="img-fluid" alt="Noise Analysis">
                 </div>
             </div>
