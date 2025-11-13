@@ -32,14 +32,14 @@
     <!-- Секция отображения загруженного изображения -->
     <h2>Image is here: </h2>
     {% if image_name %}
-        <!-- Если изображение было загружено, показываем его -->
-        <p>{{image_name}}</p>
-        <!-- Отображение изображения с Bootstrap классами -->
-        <!-- class="img-rounded" - скругленные углы -->
-        <!-- width=224 height=224 - размеры для нейросети ResNet -->
-        <p><img src="{{ url_for('static', filename=image_name) }}" class="img-rounded" alt="My Imag
+    <!-- Если изображение было загружено, показываем его -->
+    <p>{{ image_name }}</p>
+    <!-- Отображение изображения с Bootstrap классами -->
+    <!-- class="img-rounded" - скругленные углы -->
+    <!-- width=224 height=224 - размеры для нейросети ResNet -->
+    <img src="{{ url_for('static', filename=image_name) }}" class="img-rounded" alt="My Image" width="224" height="224">
     {% else %}
-        <!-- Сообщение если изображение еще не загружено -->
-        <p> There is no image yet </p>
+    <!-- Сообщение если изображение еще не загружено -->
+    <p>There is no image yet</p>
     {% endif %}
 {% endblock %}
